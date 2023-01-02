@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using planit.Data;
-using planit.Models;
 using planit.Models.Dto;
 
 namespace planit.Controllers
@@ -9,6 +8,10 @@ namespace planit.Controllers
     [ApiController]
     public class PlaceController : ControllerBase
     {
+        public PlaceController()
+        {
+        }
+
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<PlaceDTO>> GetPlaces()
@@ -57,6 +60,39 @@ namespace planit.Controllers
             PlaceStore.placeList.Add(placeDTO);
 
             return CreatedAtRoute("GetPlace", new {id = placeDTO.Id} ,placeDTO);
+        }
+
+        [HttpDelete("{id:int}", Name = "DeletePlace")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public IActionResult DeletePlace(int id)
+        {
+            if (id == 0)
+            {
+                return BadRequest();
+            }
+            var place = PlaceStore.placeList.FirstOrDefault(u =>u.Id == id);
+            if (place == null)
+            {
+                return NotFound();
+            }
+            PlaceStore.placeList.Remove(place);
+            return NoContent();
+        }
+
+        [HttpPut("{id:int}", Name = "UpdatePlace")]
+        public IActionResult UpdatePlace([FromBody]PlaceDTO placeDTO, int id)
+        {
+            if (placeDTO == null || id != placeDTO.Id)
+            {
+                return BadRequest();   
+            }
+            var place = PlaceStore.placeList.FirstOrDefault(u => u.Id == id);
+            place.Name= placeDTO.Name;
+            place.Category= placeDTO.Category;
+
+            return NoContent();
         }
     }
 }
